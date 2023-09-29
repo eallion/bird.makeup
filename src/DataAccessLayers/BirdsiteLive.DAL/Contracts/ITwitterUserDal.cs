@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BirdsiteLive.Common.Interfaces;
 using BirdsiteLive.DAL.Models;
 
 namespace BirdsiteLive.DAL.Contracts
 {
-    public interface ITwitterUserDal
+    public interface ITwitterUserDal : SocialMediaUserDal
     {
         Task CreateTwitterUserAsync(string acct, long lastTweetPostedId);
         Task<SyncTwitterUser> GetTwitterUserAsync(string acct);

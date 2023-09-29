@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Net.Sockets;
+using BirdsiteLive.Common.Interfaces;
 
 namespace BirdsiteLive.Twitter.Models
 {
-    public class ExtractedTweet
+    public class ExtractedTweet : SocialMediaPost
     {
         public long Id { get; set; }
         public long? InReplyToStatusId { get; set; }
