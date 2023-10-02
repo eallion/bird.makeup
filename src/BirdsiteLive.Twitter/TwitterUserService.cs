@@ -180,6 +180,7 @@ namespace BirdsiteLive.Twitter
                 Protected = false, //res.RootElement.GetProperty("data").GetProperty("protected").GetBoolean(), 
                 PinnedPosts = pinnedTweets,
                 StatusCount = result.GetProperty("legacy").GetProperty("statuses_count").GetInt32(),
+                FollowersCount = result.GetProperty("legacy").GetProperty("followers_count").GetInt32(),
                 Location = location,
             };
 

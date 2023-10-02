@@ -195,30 +195,51 @@ namespace BirdsiteLive.Twitter
             {
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else if (user.StatusesCount != twitterUser.StatusCount)
+            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 1)
             {
-                if (user.Followers > 1)
-                    extractedTweets = await TweetFromNitter(user, fromTweetId);
+                extractedTweets = await TweetFromNitter(user, fromTweetId, true);
                 await Task.Delay(3500);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else
+            else if (user.StatusesCount != twitterUser.StatusCount && twitterUser.FollowersCount > 500_000)
             {
-                _statisticsHandler.GotNewTweets(extractedTweets.Count);
+                extractedTweets = await TweetFromNitter(user, fromTweetId, false);
+                await Task.Delay(3500);
+                await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
 
+            _statisticsHandler.GotNewTweets(extractedTweets.Count);
             return extractedTweets.ToArray();
         }
 
-        private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId)
+        private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId, bool withReplies)
         {
-            List<string> domains = new List<string>() {"nitter.poast.org", "nitter.privacydev.net", "nitter.services.woodland.cafe", "nitter.salastil.com", "nitter.x86-64-unknown-linux-gnu.zip", "nitter.perennialte.ch"} ;
+            List<string> domains = new List<string>()
+            {
+                "nitter.poast.org", 
+                "nitter.privacydev.net", 
+                "nitter.salastil.com", 
+                "nitter.x86-64-unknown-linux-gnu.zip", 
+                "nitter.perennialte.ch", 
+                "nitter.projectsegfau.lt", 
+                "nitter.eu.projectsegfau.lt", 
+                "nitter.perennialte.ch",
+                "n.opnxng.com",
+                "nitter.mint.lgbt",
+                "nitter.hostux.net",
+                "nitter.dafriser.be",
+                "nitter.nohost.network",
+            } ;
             Random rnd = new Random();
             int randIndex = rnd.Next(domains.Count);
             var domain = domains[randIndex];
             //domain = domains.Last();
             //domain = domains[2];
-            var address = $"https://{domain}/{user.Acct}/with_replies";
+            string address;
+            if (withReplies)
+                address = $"https://{domain}/{user.Acct}/with_replies";
+            else
+                address = $"https://{domain}/{user.Acct}";
             var document = await _context.OpenAsync(address);
             _statisticsHandler.CalledApi("Nitter");
                 
@@ -265,7 +286,6 @@ namespace BirdsiteLive.Twitter
                 await Task.Delay(100);
             }
             
-            _statisticsHandler.GotNewTweets(tweets.Count);
             return tweets;
         }
         private async Task<ExtractedTweet> TweetFromSyndication(long statusId)
