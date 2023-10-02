@@ -201,7 +201,7 @@ namespace BirdsiteLive.Twitter
                 await Task.Delay(3500);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else if (user.StatusesCount != twitterUser.StatusCount && twitterUser.FollowersCount > 500_000)
+            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > 500_000)
             {
                 extractedTweets = await TweetFromNitter(user, fromTweetId, false);
                 await Task.Delay(3500);
