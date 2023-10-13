@@ -93,7 +93,7 @@ namespace BirdsiteLive.Domain
             };
             return acceptFollow;
         }
-        public HttpRequestMessage BuildRequest<T>(T data, string targetHost, string actorUrl,
+        public async Task<HttpRequestMessage> BuildRequest<T>(T data, string targetHost, string actorUrl,
             string inbox = null)
         {
             var usedInbox = $"/inbox";
@@ -107,7 +107,7 @@ namespace BirdsiteLive.Domain
 
             var digest = _cryptoService.ComputeSha256Hash(json);
 
-            var signature = _cryptoService.SignAndGetSignatureHeader(date, actorUrl, targetHost, digest, usedInbox);
+            var signature = await _cryptoService.SignAndGetSignatureHeader(date, actorUrl, targetHost, digest, usedInbox);
 
             var httpRequestMessage = new HttpRequestMessage
             {
@@ -128,7 +128,7 @@ namespace BirdsiteLive.Domain
 
         public async Task<HttpStatusCode> PostDataAsync<T>(T data, string targetHost, string actorUrl, string inbox = null)
         {
-            var httpRequestMessage = BuildRequest(data, targetHost, actorUrl, inbox);
+            var httpRequestMessage = await BuildRequest(data, targetHost, actorUrl, inbox);
 
             var client = _httpClientFactory.CreateClient();
             client.Timeout = TimeSpan.FromSeconds(2);

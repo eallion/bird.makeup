@@ -24,8 +24,7 @@ namespace BirdsiteLive.Domain
 {
     public interface IUserService
     {
-        Actor GetUser(TwitterUser twitterUser);
-        Actor GetUser(SocialMediaUser twitterUser);
+        Task<Actor> GetUser(SocialMediaUser twitterUser);
         Task<bool> FollowRequestedAsync(string signature, string method, string path, string queryString, Dictionary<string, string> requestHeaders, ActivityFollow activity, string body);
         Task<bool> UndoFollowRequestedAsync(string signature, string method, string path, string queryString, Dictionary<string, string> requestHeaders, ActivityUndoFollow activity, string body);
 
@@ -67,11 +66,7 @@ namespace BirdsiteLive.Domain
         }
         #endregion
 
-        public Actor GetUser(TwitterUser twitterUser)
-        {
-            return GetUser((SocialMediaUser)twitterUser);
-        }
-        public Actor GetUser(SocialMediaUser twitterUser)
+        public async Task<Actor> GetUser(SocialMediaUser twitterUser)
         {
             var actorUrl = UrlFactory.GetActorUrl(_instanceSettings.Domain, twitterUser.Acct);
             var acct = twitterUser.Acct.ToLowerInvariant();
@@ -137,7 +132,7 @@ namespace BirdsiteLive.Domain
                 {
                     id = $"{actorUrl}#main-key",
                     owner = actorUrl,
-                    publicKeyPem = _cryptoService.GetUserPem(acct)
+                    publicKeyPem =  await _cryptoService.GetUserPem(acct)
                 },
                 icon = new Image
                 {

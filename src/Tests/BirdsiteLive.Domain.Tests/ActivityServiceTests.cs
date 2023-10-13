@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using System.Text.Json;
+using BirdsiteLive.Cryptography;
 
 
 namespace BirdsiteLive.Domain.Tests
@@ -31,7 +32,9 @@ namespace BirdsiteLive.Domain.Tests
         {
             var logger1 = new Mock<ILogger<ActivityPubService>>();
             var httpFactory = new Mock<IHttpClientFactory>();
-            var keyFactory = new Mock<MagicKeyFactory>();
+            var keyFactory = new Mock<IMagicKeyFactory>();
+            keyFactory.Setup(_ => _.GetMagicKey()).ReturnsAsync(new MagicKey(
+                """{"D":"Oar5IoCLbM2K82c2M3ljJJUAf7KFr6beFtlhFOj+4q1WnIReXylvoe3XBkotQ13jb1RQ5dNKQhI3oMUpHbLbG8mScHv48QtT6OR1HaDVDYwEdiSGN0JsmtBRigbMJyn2AX0OlwkxJe3xi6oo3eCV5CSjU/hiW9JXA9dKD3NP1VgLIGHRNgNcIxkOfVWDN01ECYu4t2OXnZCuyqunZ0lharUJ6e8lralqkZFoP6bMevsrTc3+hYXcjfYZkevet1yUxJqNfw7RWPKNbabheTtsAuS0jhXig8XoJKY8AIffVjchGgIUI4vq4nJMN2rUxz68CF/nFOuD8feER1byABSN4Q==", "P": "7pf+7JzVFRHCSFsaXsm+CnBR/pfwTv8GVp9kpmL7Baru9h7MHnxYJ0N/RTMpMyZvDVx0Sjobp+gLrKLiYD22QfxFAlTVjoDohKUsQugydA0wrDNJ5BBmWWxkapTInGutZYwWTkefWRC/hjyZlAvUhgW9ctSas8+/LEeuyA6ql6M=","Q":"2IaktklUUgI3gbk+7jXNOClm6rc6cjoetk4sS85EjoUJZs59uOAdpfmm0uIqNP0gKy4opxnsQFxybaEHwzuYWH+ZySNS9uRRjYKfDAU6OYCYEOFKlh6jjHUCdcd8VDFNSvA0MT5DZ8tpX2MjjahuGdlfXQZm1UKYB+h1g25caSc=","DP":"JEg83eJjjNasgrBH7E4ldhTqgxq70md5oUaP2bWHkq8Rs5+vTpt+FEpxWiaTh1G65X8/t+HqPrhMvi3u2s/HnXUtUVNxPkBgG3u6pVoGAhvXYPhTrjjIN6UCCCsj7pV5Qs3wvmqp0rN3TIR+nkLGSLMqwgGOnPVkjuk/rPB+BJ0=", "DQ": "wH2CdKNgGL/rxKGAtpiR5nm4CrX1eZL9tqhsbL/k5qaSoxizX+Wttd3pVtTFHPJi5MBWV6eOBfGpsJhVpFSYrSRS/SMwIFj9v0X+Stti1bfieC8w9aArWTS0iSxc9SQXSKWeYKCvn9iPxsMF2mt/5e7+/l4wkSpwqacYwU0dTkU=", "Modulus": "yc28Klfkn//jJKnZpzK4yDsfAv5u6mjzLJwMcW30IWk3k+N/cmH3MDDlC7en04kdYOKWLHSS0+G7XaxehZOj55GG+N7GjEBeUlls1jLHAP+zCyrtPh9UDmSOhYbrTdXAExHTcGn3rVCyYURopzk+gZ7GtNCEYIPrvpUhqgLVXE0FPTeBiyGq92VOmIEdDqQ9HdHgDnzd49oXsMxaqqSh6aJBIv8JgvDUR0OJD7xVrqd5ZvsoDcaKmkNfYL/TsFuQVH5DWC0emTlIgfYp246mUDoh1Z/3vvSglZjATXMx+zjnLbVQB8zcZSSdJSOLlpBPs8CeRjWZqMBFH1hdvML01Q==", "Exponent": "AQAB", "InverseQ": "G/edCYzS5R54fU2GDys37nkoq2rlHUG+uas3fJMKRr+2OMU6sBy26p76enXWEP2gtlqmugFvm4QeKYBUgxwNCPdfof+vNb1yh8wLiqWyG636+MYJK9NkUkAIpUjyVvI4rFWQX4+1cu7pqEqetfP0LafS+4Z+FPhBJK6Iz3YvJng="}"""));
             var cryptoService = new CryptoService(keyFactory.Object);
             httpFactory.Setup(_ => _.CreateClient(string.Empty)).Returns(new HttpClient());
             var service = new ActivityPubService(cryptoService, _settings, httpFactory.Object, logger1.Object);
@@ -56,7 +59,7 @@ namespace BirdsiteLive.Domain.Tests
                 """{"object":{"object":"https://mastodon.technology/users/testtest3","@context":"https://www.w3.org/ns/activitystreams","id":"abc","type":"Follow","actor":"https://mastodon.technology/users/testtest2"},"@context":"https://www.w3.org/ns/activitystreams","id":"awef","type":"Accept","actor":"https://mastodon.technology/users/testtest"}""";
             #region Validations
 
-            var req = service.BuildRequest(activity, "google.com", "tata", "awef");
+            var req = await service.BuildRequest(activity, "google.com", "tata", "awef");
             
             Assert.AreEqual(await req.Content.ReadAsStringAsync(), json);
 
@@ -69,7 +72,7 @@ namespace BirdsiteLive.Domain.Tests
 
             var logger1 = new Mock<ILogger<ActivityPubService>>();
             var httpFactory = new Mock<IHttpClientFactory>();
-            var keyFactory = new Mock<MagicKeyFactory>();
+            var keyFactory = new Mock<IMagicKeyFactory>();
             var cryptoService = new CryptoService(keyFactory.Object);
             httpFactory.Setup(_ => _.CreateClient(string.Empty)).Returns(new HttpClient());
             var service = new ActivityPubService(cryptoService, _settings, httpFactory.Object, logger1.Object);

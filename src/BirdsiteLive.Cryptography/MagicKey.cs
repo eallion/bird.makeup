@@ -65,8 +65,6 @@ namespace BirdsiteLive.Cryptography
             if (key[0] == '{')
             {
                 _rsa = RSA.Create();
-                Console.WriteLine(key);
-                Console.WriteLine(JsonSerializer.Deserialize<RSAKeyParms>(key).Make());
                 _rsa.ImportParameters(JsonSerializer.Deserialize<RSAKeyParms>(key).Make());
             }
             else

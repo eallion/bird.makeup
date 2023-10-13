@@ -1,39 +1,45 @@
 ﻿using System.IO;
+using System.Text.Json;
+using System.Threading.Tasks;
 using BirdsiteLive.Cryptography;
+using BirdsiteLive.DAL.Contracts;
 
 namespace BirdsiteLive.Domain.Factories
 {
     public interface IMagicKeyFactory
     {
-        MagicKey GetMagicKey();
+        Task<MagicKey> GetMagicKey();
     }
 
     public class MagicKeyFactory : IMagicKeyFactory
     {
-        private const string Path = "key.json";
         private static MagicKey _magicKey;
+        private ISettingsDal _settings;
 
         #region Ctor
-        public MagicKeyFactory()
+        public MagicKeyFactory(ISettingsDal settings)
         {
-            
+            _settings = settings;
         }
         #endregion
 
-        public MagicKey GetMagicKey()
+        public async Task<MagicKey> GetMagicKey()
         {
             //Cached key
             if (_magicKey != null) return _magicKey;
 
+            var keyJson = await _settings.Get("key.json");
+            
             //Generate key if needed
-            if (!File.Exists(Path))
+            if (keyJson is null)
             {
                 var key = MagicKey.Generate();
-                File.WriteAllText(Path, key.PrivateKey);
+                keyJson = JsonDocument.Parse(key.PrivateKey).RootElement;
+                await _settings.Set("key.json", keyJson);
             }
 
             //Load and return key
-            var serializedKey = File.ReadAllText(Path);
+            var serializedKey = keyJson.ToString();
             _magicKey = new MagicKey(serializedKey);
             return _magicKey;
         }

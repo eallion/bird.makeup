@@ -77,6 +77,7 @@ namespace BirdsiteLive
                 services.For<ITwitterUserDal>().Use<TwitterUserPostgresDal>().Singleton();
                 services.For<IFollowersDal>().Use<FollowersPostgresDal>().Singleton();
                 services.For<IDbInitializerDal>().Use<DbInitializerPostgresDal>().Singleton();
+                services.For<ISettingsDal>().Use<SettingsPostgresDal>().Singleton();
             }
             else
             {
