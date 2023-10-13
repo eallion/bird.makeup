@@ -22,5 +22,6 @@ namespace BirdsiteLive.DAL.Contracts
         Task<int> GetTwitterUsersCountAsync();
         Task<TimeSpan> GetTwitterSyncLag();
         Task<int> GetFailingTwitterUsersCountAsync();
+        Task UpdateTwitterUserFediAcctAsync(string twitterUsername, string fediUsername);
     }
 }
