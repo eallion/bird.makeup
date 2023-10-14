@@ -201,7 +201,7 @@ namespace BirdsiteLive.Twitter
                 await Task.Delay(3500);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > 500_000)
+            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > 100_000)
             {
                 extractedTweets = await TweetFromNitter(user, fromTweetId, false);
                 await Task.Delay(3500);
@@ -214,6 +214,7 @@ namespace BirdsiteLive.Twitter
 
         private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId, bool withReplies)
         {
+            // https://status.d420.de/
             List<string> domains = new List<string>()
             {
                 "nitter.poast.org", 
@@ -223,12 +224,12 @@ namespace BirdsiteLive.Twitter
                 "nitter.perennialte.ch", 
                 "nitter.projectsegfau.lt", 
                 "nitter.eu.projectsegfau.lt", 
-                "nitter.perennialte.ch",
                 "n.opnxng.com",
                 "nitter.mint.lgbt",
                 "nitter.hostux.net",
                 "nitter.dafriser.be",
                 "nitter.nohost.network",
+                "nitter.woodland.cafe",
             } ;
             Random rnd = new Random();
             int randIndex = rnd.Next(domains.Count);
