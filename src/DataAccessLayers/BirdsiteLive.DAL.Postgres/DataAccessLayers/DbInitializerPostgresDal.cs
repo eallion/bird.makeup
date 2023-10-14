@@ -23,7 +23,7 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
     public class DbInitializerPostgresDal : PostgresBase, IDbInitializerDal
     {
         private readonly PostgresTools _tools;
-        private readonly Version _currentVersion = new Version(3, 1);
+        private readonly Version _currentVersion = new Version(3, 2);
         private const string DbVersionType = "db-version";
 
         #region Ctor
@@ -135,7 +135,8 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
                 new Tuple<Version, Version>(new Version(2,3), new Version(2,4)),
                 new Tuple<Version, Version>(new Version(2,4), new Version(2,5)),
                 new Tuple<Version, Version>(new Version(2,5), new Version(3,0)),
-                new Tuple<Version, Version>(new Version(3,0), new Version(3,1))
+                new Tuple<Version, Version>(new Version(3,0), new Version(3,1)),
+                new Tuple<Version, Version>(new Version(3,1), new Version(3,2))
             };
         }
 
@@ -231,6 +232,14 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
                     setting_value JSONB
                 );";
                 await _tools.ExecuteRequestAsync(createSettings);
+            }
+            else if (from == new Version(3, 1) && to == new Version(3, 2))
+            {
+                var alterTwitterExtradata = $@"ALTER TABLE {_settings.TwitterUserTableName} ADD extradata JSONB";
+                await _tools.ExecuteRequestAsync(alterTwitterExtradata);
+
+                var alterInstagramExtradata = $@"ALTER TABLE {_settings.InstagramUserTableName} ADD extradata JSONB";
+                await _tools.ExecuteRequestAsync(alterInstagramExtradata);
             }
             else
             {
