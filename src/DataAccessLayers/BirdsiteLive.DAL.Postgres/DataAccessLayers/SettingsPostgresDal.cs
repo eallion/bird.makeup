@@ -47,6 +47,9 @@ public class SettingsPostgresDal : PostgresBase, ISettingsDal
         
         var res = JsonDocument.Parse(reader["setting_value"] as string).RootElement;
         _cache.Set(key, res, _cacheEntryOptions);
+        
+        await reader.CloseAsync();
+        
         return res;
     }
     public async Task Set(string key, JsonElement? value)

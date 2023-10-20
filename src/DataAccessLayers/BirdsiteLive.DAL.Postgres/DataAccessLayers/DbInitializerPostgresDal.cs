@@ -39,7 +39,7 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
 
             try
             {
-                using var dbConnection = Connection;
+                await using var dbConnection = Connection;
 
                 var result = (await dbConnection.QueryAsync<DbVersion>(query, new { type = DbVersionType })).FirstOrDefault();
 
