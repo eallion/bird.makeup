@@ -37,9 +37,10 @@ namespace BirdsiteLive.Twitter
         private readonly InstanceSettings _instanceSettings;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBrowsingContext _context;
+        private readonly ISettingsDal _settings;
 
         #region Ctor
-        public TwitterTweetsService(ITwitterAuthenticationInitializer twitterAuthenticationInitializer, ITwitterStatisticsHandler statisticsHandler, ICachedTwitterUserService twitterUserService, ITwitterUserDal twitterUserDal, InstanceSettings instanceSettings, IHttpClientFactory httpClientFactory, ILogger<TwitterTweetsService> logger)
+        public TwitterTweetsService(ITwitterAuthenticationInitializer twitterAuthenticationInitializer, ITwitterStatisticsHandler statisticsHandler, ICachedTwitterUserService twitterUserService, ITwitterUserDal twitterUserDal, InstanceSettings instanceSettings, IHttpClientFactory httpClientFactory, ISettingsDal settings, ILogger<TwitterTweetsService> logger)
         {
             _twitterAuthenticationInitializer = twitterAuthenticationInitializer;
             _statisticsHandler = statisticsHandler;
@@ -47,6 +48,7 @@ namespace BirdsiteLive.Twitter
             _twitterUserDal = twitterUserDal;
             _instanceSettings = instanceSettings;
             _httpClientFactory = httpClientFactory;
+            _settings = settings;
             _logger = logger;
             
             var requester = new DefaultHttpRequester();
@@ -215,22 +217,16 @@ namespace BirdsiteLive.Twitter
         private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId, bool withReplies)
         {
             // https://status.d420.de/
-            List<string> domains = new List<string>()
+            var nitterSettings = await _settings.Get("nitter");
+            if (nitterSettings is null)
+                return new List<ExtractedTweet>();
+                
+            
+            List<string> domains = new List<string>() { } ;
+            foreach (var d in nitterSettings.Value.GetProperty("endpoints").EnumerateArray())
             {
-                "nitter.poast.org", 
-                "nitter.privacydev.net", 
-                "nitter.x86-64-unknown-linux-gnu.zip", 
-                "nitter.perennialte.ch", 
-                "nitter.projectsegfau.lt", 
-                "nitter.eu.projectsegfau.lt", 
-                "n.opnxng.com",
-                "nitter.mint.lgbt",
-                "nitter.hostux.net",
-                "nitter.dafriser.be",
-                "nitter.nohost.network",
-                "nitter.rawbit.ninja",
-                "nitter.catsarch.com",
-            } ;
+                domains.Add(d.GetString());
+            }
             Random rnd = new Random();
             int randIndex = rnd.Next(domains.Count);
             var domain = domains[randIndex];

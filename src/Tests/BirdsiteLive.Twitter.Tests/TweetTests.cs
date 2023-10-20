@@ -29,6 +29,7 @@ namespace BirdsiteLive.ActivityPub.Tests
             var logger3 = new Mock<ILogger<TwitterTweetsService>>();
             var stats = new Mock<ITwitterStatisticsHandler>();
             var twitterDal = new Mock<ITwitterUserDal>();
+            var settingsDal = new Mock<ISettingsDal>();
             var httpFactory = new Mock<IHttpClientFactory>();
             httpFactory.Setup(_ => _.CreateClient(string.Empty)).Returns(new HttpClient());
             var settings = new InstanceSettings
@@ -38,7 +39,7 @@ namespace BirdsiteLive.ActivityPub.Tests
             ITwitterAuthenticationInitializer auth = new TwitterAuthenticationInitializer(httpFactory.Object, settings, logger1.Object);
             ITwitterUserService user = new TwitterUserService(auth, stats.Object, logger2.Object);
             ICachedTwitterUserService user2 = new CachedTwitterUserService(user, settings);
-            _tweetService = new TwitterTweetsService(auth, stats.Object, user2, twitterDal.Object, settings, httpFactory.Object, logger3.Object);
+            _tweetService = new TwitterTweetsService(auth, stats.Object, user2, twitterDal.Object, settings, httpFactory.Object, settingsDal.Object, logger3.Object);
 
         }
 

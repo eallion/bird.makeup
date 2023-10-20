@@ -2,9 +2,9 @@ using System;
 using System.Text.Json;
 using System.Threading.Tasks;
 using BirdsiteLive.DAL.Contracts;
-using BirdsiteLive.DAL.Models;
 using BirdsiteLive.DAL.Postgres.DataAccessLayers.Base;
 using BirdsiteLive.DAL.Postgres.Settings;
+using Microsoft.Extensions.Caching.Memory;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -14,10 +14,23 @@ public class SettingsPostgresDal : PostgresBase, ISettingsDal
 {
     public SettingsPostgresDal(PostgresSettings settings) : base(settings)
     {
+        _cache = new MemoryCache(new MemoryCacheOptions());
     }
 
+        private readonly MemoryCache _cache;
+        private readonly MemoryCacheEntryOptions _cacheEntryOptions = new MemoryCacheEntryOptions()
+            .SetSize(1)//Size amount
+            //Priority on removing when reaching size limit (memory pressure)
+            .SetPriority(CacheItemPriority.High)
+            // Keep in cache for this time, reset time if accessed.
+            .SetSlidingExpiration(TimeSpan.FromMinutes(3))
+            // Remove from cache after this time, regardless of sliding expiration
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(5));
     public async Task<JsonElement?> Get(string key)
     {
+        if (_cache.TryGetValue(key, out JsonElement cachedRes))
+            return cachedRes;
+        
         var query = $"SELECT setting_key, setting_value FROM {_settings.SettingTableName} WHERE setting_key = $1";
 
         await using var connection = DataSource.CreateConnection();
@@ -32,8 +45,9 @@ public class SettingsPostgresDal : PostgresBase, ISettingsDal
         if (reader["setting_value"] as string is null)
             return null;
         
-        var res = JsonDocument.Parse(reader["setting_value"] as string);
-        return res.RootElement;
+        var res = JsonDocument.Parse(reader["setting_value"] as string).RootElement;
+        _cache.Set(key, res, _cacheEntryOptions);
+        return res;
     }
     public async Task Set(string key, JsonElement? value)
     {
