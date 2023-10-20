@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using BirdsiteLive.DAL.Contracts;
 using BirdsiteLive.DAL.Models;
@@ -8,17 +10,22 @@ using BirdsiteLive.DAL.Postgres.DataAccessLayers.Base;
 using BirdsiteLive.DAL.Postgres.Settings;
 using Dapper;
 using Npgsql;
+using NpgsqlTypes;
 
 namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
 {
-    public class TwitterUserPostgresDal : PostgresBase, ITwitterUserDal
+    public class TwitterUserPostgresDal : UserPostgresDal, ITwitterUserDal
     {
         #region Ctor
         public TwitterUserPostgresDal(PostgresSettings settings) : base(settings)
         {
-            
+
+            tableName = _settings.TwitterUserTableName;
         }
         #endregion
+
+        public override string tableName { get; set; } 
+
 
         public async Task CreateTwitterUserAsync(string acct, long lastTweetPostedId)
         {
@@ -32,33 +39,6 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
             }
         }
 
-        public async Task<SyncTwitterUser> GetTwitterUserAsync(string acct)
-        {
-            var query = $"SELECT * FROM {_settings.TwitterUserTableName} WHERE acct = $1";
-
-            acct = acct.ToLowerInvariant();
-
-            await using var connection = DataSource.CreateConnection();
-            await connection.OpenAsync();
-            await using var command = new NpgsqlCommand(query, connection) {
-                Parameters = { new() { Value = acct}}
-            };
-            var reader = await command.ExecuteReaderAsync();
-            if (!await reader.ReadAsync())
-                return null;
-            
-            return new SyncTwitterUser
-            {
-                Id = reader["id"] as int? ?? default,
-                Acct = reader["acct"] as string,
-                TwitterUserId = reader["twitterUserId"] as long? ?? default,
-                LastTweetPostedId = reader["lastTweetPostedId"] as long? ?? default,
-                LastSync = reader["lastSync"] as DateTime? ?? default,
-                FetchingErrorCount = reader["fetchingErrorCount"] as int? ?? default,
-                FediAcct = reader["fediverseaccount"] as string,
-            };
-
-        }
 
         public async Task<SyncTwitterUser> GetTwitterUserAsync(int id)
         {
@@ -192,15 +172,39 @@ namespace BirdsiteLive.DAL.Postgres.DataAccessLayers
             }
         }
 
-        public async Task UpdateTwitterUserFediAcctAsync(string twitterUsername, string fediUsername)
+        public async Task UpdateTwitterUserFediAcctAsync(string twitterUsername, string key)
         {
             if(twitterUsername == default) throw new ArgumentException("id");
 
-            var query = $"UPDATE {_settings.TwitterUserTableName} SET fediverseaccount = $1 WHERE acct = $2";
+            var query = $"UPDATE {_settings.TwitterUserTableName} " + "SET extradata['fediaccount'] = $1 WHERE acct = $2";
             await using var connection = DataSource.CreateConnection();
             await connection.OpenAsync();
             await using var command = new NpgsqlCommand(query, connection) {
-                Parameters = { new() { Value = fediUsername}, new() { Value = twitterUsername}}
+                Parameters = 
+                { 
+                    new() { Value = JsonSerializer.Serialize(key), NpgsqlDbType = NpgsqlDbType.Jsonb },
+                    new() { Value = twitterUsername},
+                    
+                }
+            };
+
+            await command.ExecuteNonQueryAsync();
+        }
+        public async Task UpdateUserExtradataAsync(string twitterUsername, string key, object value)
+        {
+            if(twitterUsername == default) throw new ArgumentException("id");
+
+            var query = $"UPDATE {_settings.TwitterUserTableName} SET extradata['wikidata'][$1] = $2 WHERE acct = $3";
+            await using var connection = DataSource.CreateConnection();
+            await connection.OpenAsync();
+            await using var command = new NpgsqlCommand(query, connection) {
+                Parameters = 
+                { 
+                    new() { Value = key},
+                    new() { Value = JsonSerializer.Serialize(value), NpgsqlDbType = NpgsqlDbType.Jsonb },
+                    new() { Value = twitterUsername},
+                    
+                }
             };
 
             await command.ExecuteNonQueryAsync();
