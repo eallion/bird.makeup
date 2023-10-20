@@ -10,9 +10,6 @@
     <ItemGroup>
       <ProjectReference Include="..\DataAccessLayers\BirdsiteLive.DAL.Postgres\BirdsiteLive.DAL.Postgres.csproj" />
       <ProjectReference Include="..\DataAccessLayers\BirdsiteLive.DAL\BirdsiteLive.DAL.csproj" />
-      <Content Include="query.sparql">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </Content>
     </ItemGroup>
 
 </Project>
