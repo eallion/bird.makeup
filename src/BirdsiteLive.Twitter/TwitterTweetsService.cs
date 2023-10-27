@@ -266,6 +266,9 @@ namespace BirdsiteLive.Twitter
                     var tweet = await GetTweetAsync(match);
                     if (tweet.Author.Acct != user.Acct)
                     {
+                        if (!nitterSettings.Value.GetProperty("allowboosts").GetBoolean())
+                            continue;
+                        
                         tweet.IsRetweet = true;
                         tweet.OriginalAuthor = tweet.Author;
                         tweet.Author = await _twitterUserService.GetUserAsync(user.Acct);
