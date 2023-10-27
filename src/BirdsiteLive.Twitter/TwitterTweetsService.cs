@@ -199,14 +199,12 @@ namespace BirdsiteLive.Twitter
             }
             else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 1)
             {
-                extractedTweets = await TweetFromNitter(user, fromTweetId, true);
-                await Task.Delay(3500);
+                extractedTweets = await TweetFromNitter(user, fromTweetId, true, false);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
             else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > 50_000)
             {
-                extractedTweets = await TweetFromNitter(user, fromTweetId, false);
-                await Task.Delay(3500);
+                extractedTweets = await TweetFromNitter(user, fromTweetId, false, true);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
 
@@ -214,7 +212,7 @@ namespace BirdsiteLive.Twitter
             return extractedTweets.ToArray();
         }
 
-        private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId, bool withReplies)
+        private async Task<List<ExtractedTweet>> TweetFromNitter(SyncTwitterUser user, long fromId, bool withReplies, bool lowtrust)
         {
             // https://status.d420.de/
             var nitterSettings = await _settings.Get("nitter");
@@ -222,22 +220,29 @@ namespace BirdsiteLive.Twitter
                 return new List<ExtractedTweet>();
                 
             
+            var requester = new DefaultHttpRequester();
+            requester.Headers["User-Agent"] = nitterSettings.Value.GetProperty("useragent").GetString();
+            requester.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
+            requester.Headers["Accept-Encoding"] = "gzip, deflate";
+            requester.Headers["Accept-Language"] = "en-US,en;q=0.5";
+            var config = Configuration.Default.With(requester).WithDefaultLoader();
+            var context = BrowsingContext.New(config);
+            
             List<string> domains = new List<string>() { } ;
-            foreach (var d in nitterSettings.Value.GetProperty("endpoints").EnumerateArray())
+            var prop = (lowtrust) ? "lowtrustendpoints" : "endpoints";
+            foreach (var d in nitterSettings.Value.GetProperty(prop).EnumerateArray())
             {
                 domains.Add(d.GetString());
             }
             Random rnd = new Random();
             int randIndex = rnd.Next(domains.Count);
             var domain = domains[randIndex];
-            //domain = domains.Last();
-            //domain = domains[2];
             string address;
             if (withReplies)
                 address = $"https://{domain}/{user.Acct}/with_replies";
             else
                 address = $"https://{domain}/{user.Acct}";
-            var document = await _context.OpenAsync(address);
+            var document = await context.OpenAsync(address);
             _statisticsHandler.CalledApi("Nitter");
                 
             var cellSelector = ".tweet-link";
@@ -266,7 +271,7 @@ namespace BirdsiteLive.Twitter
                     var tweet = await GetTweetAsync(match);
                     if (tweet.Author.Acct != user.Acct)
                     {
-                        if (!nitterSettings.Value.GetProperty("allowboosts").GetBoolean())
+                        if (!nitterSettings.Value.GetProperty("allowboosts").GetBoolean() || lowtrust)
                             continue;
                         
                         tweet.IsRetweet = true;
@@ -285,6 +290,8 @@ namespace BirdsiteLive.Twitter
                 }
                 await Task.Delay(100);
             }
+            
+            await Task.Delay(nitterSettings.Value.GetProperty("postnitterdelay").GetInt32());
             
             return tweets;
         }
