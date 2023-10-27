@@ -31,7 +31,7 @@ namespace BirdsiteLive.ActivityPub.Tests
             var twitterDal = new Mock<ITwitterUserDal>();
             var settingsDal = new Mock<ISettingsDal>();
             settingsDal.Setup(_ => _.Get("nitter"))
-                .ReturnsAsync(JsonDocument.Parse("""{"endpoints": ["nitter.privacydev.net"], "allowboosts": true}""").RootElement);
+                .ReturnsAsync(JsonDocument.Parse("""{"endpoints": ["nitter.x86-64-unknown-linux-gnu.zip"], "allowboosts": true, "postnitterdelay": 0}""").RootElement);
             var httpFactory = new Mock<IHttpClientFactory>();
             httpFactory.Setup(_ => _.CreateClient(string.Empty)).Returns(new HttpClient());
             var settings = new InstanceSettings

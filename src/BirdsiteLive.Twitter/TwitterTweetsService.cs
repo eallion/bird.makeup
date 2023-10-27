@@ -38,6 +38,7 @@ namespace BirdsiteLive.Twitter
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBrowsingContext _context;
         private readonly ISettingsDal _settings;
+        private string Useragent = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
 
         #region Ctor
         public TwitterTweetsService(ITwitterAuthenticationInitializer twitterAuthenticationInitializer, ITwitterStatisticsHandler statisticsHandler, ICachedTwitterUserService twitterUserService, ITwitterUserDal twitterUserDal, InstanceSettings instanceSettings, IHttpClientFactory httpClientFactory, ISettingsDal settings, ILogger<TwitterTweetsService> logger)
@@ -52,7 +53,7 @@ namespace BirdsiteLive.Twitter
             _logger = logger;
             
             var requester = new DefaultHttpRequester();
-            requester.Headers["User-Agent"] = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
+            requester.Headers["User-Agent"] = Useragent;
             requester.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
             requester.Headers["Accept-Encoding"] = "gzip, deflate";
             requester.Headers["Accept-Language"] = "en-US,en;q=0.5";
@@ -221,7 +222,12 @@ namespace BirdsiteLive.Twitter
                 
             
             var requester = new DefaultHttpRequester();
-            requester.Headers["User-Agent"] = nitterSettings.Value.GetProperty("useragent").GetString();
+            string useragent;
+            if (nitterSettings.Value.TryGetProperty("useragent", out JsonElement useragentElement))
+                useragent = useragentElement.GetString();
+            else
+                useragent = Useragent;
+            requester.Headers["User-Agent"] = useragent;
             requester.Headers["Accept"] = "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8";
             requester.Headers["Accept-Encoding"] = "gzip, deflate";
             requester.Headers["Accept-Language"] = "en-US,en;q=0.5";
