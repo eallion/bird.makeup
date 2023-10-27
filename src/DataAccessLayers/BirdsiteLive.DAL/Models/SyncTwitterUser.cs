@@ -1,8 +1,9 @@
 ﻿using System;
+using BirdsiteLive.Common.Interfaces;
 
 namespace BirdsiteLive.DAL.Models
 {
-    public class SyncTwitterUser
+    public class SyncTwitterUser : SyncUser
     {
         public int Id { get; set; }
         public long TwitterUserId { get; set; }

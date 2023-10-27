@@ -57,7 +57,7 @@ namespace BirdsiteLive.ActivityPub.Tests
         public async Task TimelineKobe()
         {
             var user = await _twitterUserDalMoq.GetTwitterUserAsync("kobebryant");
-            var tweets = await _tweetService.GetTimelineAsync(user, 1117506566939234304);
+            var tweets = await _tweetService.GetTimelineAsync((SyncTwitterUser)user, 1117506566939234304);
             
             if (tweets.Length == 0)
                 Assert.Inconclusive();
@@ -81,7 +81,7 @@ namespace BirdsiteLive.ActivityPub.Tests
             var user = await _twitterUserDalMoq.GetTwitterUserAsync("mkbhd");
             user.Followers = 99999999; // we want to make sure it's a VIP user
             user.LastTweetPostedId = 1699909873041916323; 
-            var tweets = await _tweetService.GetTimelineAsync(user, 1699909873041916323);
+            var tweets = await _tweetService.GetTimelineAsync((SyncTwitterUser) user, 1699909873041916323);
 
             Assert.IsTrue(tweets.Length > 0);
         }
@@ -91,7 +91,7 @@ namespace BirdsiteLive.ActivityPub.Tests
             var user = await _twitterUserDalMoq.GetTwitterUserAsync("grantimahara");
             user.Followers = 99999999; // we want to make sure it's a VIP user
             user.StatusesCount = 10;
-            var tweets = await _tweetService.GetTimelineAsync(user, 1232042440875335680);
+            var tweets = await _tweetService.GetTimelineAsync((SyncTwitterUser) user, 1232042440875335680);
 
             if (tweets.Length == 0)
                 Assert.Inconclusive();

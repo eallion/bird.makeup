@@ -75,6 +75,7 @@ namespace BirdsiteLive
                 services.For<PostgresSettings>().Use(x => postgresSettings);
                 
                 services.For<ITwitterUserDal>().Use<TwitterUserPostgresDal>().Singleton();
+                services.For<IInstagramUserDal>().Use<InstagramUserPostgresDal>().Singleton();
                 services.For<IFollowersDal>().Use<FollowersPostgresDal>().Singleton();
                 services.For<IDbInitializerDal>().Use<DbInitializerPostgresDal>().Singleton();
                 services.For<ISettingsDal>().Use<SettingsPostgresDal>().Singleton();
@@ -88,11 +89,11 @@ namespace BirdsiteLive
             services.For<ITwitterUserService>().Use<TwitterUserService>().Singleton();
 
             services.For<ITwitterAuthenticationInitializer>().Use<TwitterAuthenticationInitializer>().Singleton();
-            
-            if (true)
-                services.For<ISocialMediaService>().Use<TwitterService>().Singleton();
-            else
+
+            if (Configuration.GetSection("Instance").Get<InstanceSettings>().InstaMode) 
                 services.For<ISocialMediaService>().Use<InstagramService>().Singleton();
+            else
+                services.For<ISocialMediaService>().Use<TwitterService>().Singleton();
             
             services.For<ICachedStatisticsService>().Use<CachedStatisticsService>().Singleton();
 

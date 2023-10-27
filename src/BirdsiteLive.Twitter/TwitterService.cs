@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using BirdsiteLive.Common.Interfaces;
 using BirdsiteLive.Common.Settings;
+using BirdsiteLive.DAL.Contracts;
 using BirdsiteLive.DAL.Models;
 using BirdsiteLive.Twitter.Models;
 using Microsoft.Extensions.Caching.Memory;
@@ -16,13 +17,16 @@ namespace BirdsiteLive.Twitter
         private readonly ITwitterUserService _twitterUserService;
 
         #region Ctor
-        public TwitterService(ICachedTwitterTweetsService twitterService, ICachedTwitterUserService twitterUserService, InstanceSettings settings)
+        public TwitterService(ICachedTwitterTweetsService twitterService, ICachedTwitterUserService twitterUserService, ITwitterUserDal userDal, InstanceSettings settings)
         {
             _twitterTweetsService = twitterService;
             _twitterUserService = twitterUserService;
+            UserDal = userDal;
         }
         #endregion
 
+        public string ServiceName { get; } = "Twitter";
+        public SocialMediaUserDal UserDal { get; }
         public async Task<SocialMediaUser> GetUserAsync(string user)
         {
             var res = await _twitterUserService.GetUserAsync(user);

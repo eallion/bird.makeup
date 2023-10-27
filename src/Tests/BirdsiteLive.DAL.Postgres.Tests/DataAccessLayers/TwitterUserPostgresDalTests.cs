@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml;
+using BirdsiteLive.DAL.Models;
 using BirdsiteLive.DAL.Postgres.DataAccessLayers;
 using BirdsiteLive.DAL.Postgres.Tests.DataAccessLayers.Base;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -115,7 +116,7 @@ namespace BirdsiteLive.DAL.Postgres.Tests.DataAccessLayers
             result.LastTweetPostedId = updatedLastTweetId;
             result.FetchingErrorCount = errors;
             result.LastSync = now;
-            await dal.UpdateTwitterUserAsync(result);
+            await dal.UpdateTwitterUserAsync((SyncTwitterUser) result);
 
             result = await dal.GetTwitterUserAsync(acct);
 
@@ -145,7 +146,7 @@ namespace BirdsiteLive.DAL.Postgres.Tests.DataAccessLayers
             result.LastTweetPostedId = updatedLastTweetId;
             result.FetchingErrorCount = errors;
             result.LastSync = now;
-            await dal.UpdateTwitterUserAsync(result);
+            await dal.UpdateTwitterUserAsync((SyncTwitterUser) result);
 
             result = await dal.GetTwitterUserAsync(acct);
 

@@ -1,8 +1,9 @@
+using BirdsiteLive.DAL.Contracts;
 using BirdsiteLive.DAL.Postgres.Settings;
 
 namespace BirdsiteLive.DAL.Postgres.DataAccessLayers;
 
-public class InstagramUserPostgresDal : UserPostgresDal
+public class InstagramUserPostgresDal : UserPostgresDal, IInstagramUserDal
 {
     
         #region Ctor

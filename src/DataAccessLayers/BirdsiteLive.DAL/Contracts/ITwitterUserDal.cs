@@ -8,7 +8,7 @@ namespace BirdsiteLive.DAL.Contracts
     public interface ITwitterUserDal : SocialMediaUserDal
     {
         Task CreateTwitterUserAsync(string acct, long lastTweetPostedId);
-        Task<SyncTwitterUser> GetTwitterUserAsync(string acct);
+        Task<SyncUser> GetTwitterUserAsync(string acct);
         Task<SyncTwitterUser> GetTwitterUserAsync(int id);
         Task<SyncTwitterUser[]> GetAllTwitterUsersWithFollowersAsync(int maxNumber, int nStart, int nEnd, int m);
         Task<SyncTwitterUser[]> GetAllTwitterUsersAsync(int maxNumber);

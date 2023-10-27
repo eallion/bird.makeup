@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using BirdsiteLive.Common.Interfaces;
 using BirdsiteLive.DAL.Models;
 using BirdsiteLive.DAL.Postgres.DataAccessLayers.Base;
 using BirdsiteLive.DAL.Postgres.Settings;
@@ -7,7 +8,7 @@ using Npgsql;
 
 namespace BirdsiteLive.DAL.Postgres.DataAccessLayers;
 
-public abstract class UserPostgresDal : PostgresBase
+public abstract class UserPostgresDal : PostgresBase, SocialMediaUserDal
 {
     
         #region Ctor
@@ -19,7 +20,7 @@ public abstract class UserPostgresDal : PostgresBase
 
         public abstract string tableName { get; set; }
         
-        public async Task<SyncTwitterUser> GetTwitterUserAsync(string acct)
+        public async Task<SyncUser> GetTwitterUserAsync(string acct)
         {
             var query = $"SELECT * FROM {tableName} WHERE acct = $1";
 

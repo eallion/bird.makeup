@@ -5,4 +5,6 @@ namespace BirdsiteLive.Common.Interfaces;
 public interface ISocialMediaService
 {
         Task<SocialMediaUser> GetUserAsync(string username);
+        string ServiceName { get;  }
+        SocialMediaUserDal UserDal { get; }
 }

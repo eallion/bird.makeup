@@ -9,6 +9,7 @@ namespace BirdsiteLive.Common.Settings
         public string AdminEmail { get; set; }
         public bool ResolveMentionsInProfiles { get; set; }
         public bool PublishReplies { get; set; }
+        public bool InstaMode { get; set; } = false;
 
         public string UnlistedTwitterAccounts { get; set; }
         public string SensitiveTwitterAccounts { get; set; }

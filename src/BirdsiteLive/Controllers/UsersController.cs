@@ -103,8 +103,6 @@ namespace BirdsiteLive.Controllers
                 notFound = true;
             }
 
-            //var isSaturated = _twitterUserService.IsUserApiRateLimited();
-
             var acceptHeaders = Request.Headers["Accept"];
             if (acceptHeaders.Any())
             {
@@ -125,7 +123,7 @@ namespace BirdsiteLive.Controllers
             Follower[] followers = new Follower[] { };
 
             string fediAccount = null;
-            var userDal = await _twitterUserDal.GetTwitterUserAsync(user.Acct);
+            var userDal = await _socialMediaService.UserDal.GetTwitterUserAsync(user.Acct);
             if (userDal != null)
             {
                 followers = await _followersDal.GetFollowersAsync(userDal.Id);
@@ -145,6 +143,7 @@ namespace BirdsiteLive.Controllers
                 MostPopularServer = followers.GroupBy(x => x.Host).OrderByDescending(x => x.Count()).Select(x => x.Key).FirstOrDefault("N/A"),
                 FediverseAccount = fediAccount,
                 InstanceHandle = $"@{user.Acct.ToLowerInvariant()}@{_instanceSettings.Domain}",
+                ServiceName = _socialMediaService.ServiceName,
             };
             return View(displayableUser);
         }

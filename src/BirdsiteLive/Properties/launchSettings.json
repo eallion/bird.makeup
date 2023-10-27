@@ -7,6 +7,16 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "BirdsiteLive (IG)": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Instance__ParallelTwitterRequests": "0",
+        "Instance__InstaMode": "true"
+      },
+      "applicationUrl": "http://localhost:5042"
+    },
     "BirdsiteLive": {
       "commandName": "Project",
       "launchBrowser": true,

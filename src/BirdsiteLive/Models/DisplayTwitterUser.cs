@@ -13,5 +13,6 @@
 
         public string InstanceHandle { get; set; }
         public string FediverseAccount { get; set; }
+        public string ServiceName { get; set; }
     }
 }
