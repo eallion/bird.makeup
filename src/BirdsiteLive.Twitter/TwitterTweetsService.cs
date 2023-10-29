@@ -38,7 +38,7 @@ namespace BirdsiteLive.Twitter
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBrowsingContext _context;
         private readonly ISettingsDal _settings;
-        private string Useragent = "Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/117.0";
+        private string Useragent = "Bird.makeup ( https://git.sr.ht/~cloutier/bird.makeup ) Bot";
 
         #region Ctor
         public TwitterTweetsService(ITwitterAuthenticationInitializer twitterAuthenticationInitializer, ITwitterStatisticsHandler statisticsHandler, ICachedTwitterUserService twitterUserService, ITwitterUserDal twitterUserDal, InstanceSettings instanceSettings, IHttpClientFactory httpClientFactory, ISettingsDal settings, ILogger<TwitterTweetsService> logger)
@@ -193,17 +193,25 @@ namespace BirdsiteLive.Twitter
             }
             extractedTweets = extractedTweets.OrderByDescending(x => x.Id).Where(x => x.Id > fromTweetId).ToList();
 
+            int followersThreshold = 9999999;
+            int twitterFollowersThreshold = 9999999;
+            var nitterSettings = await _settings.Get("nitter");
+            if (nitterSettings is not null)
+            {
+                followersThreshold = nitterSettings.Value.GetProperty("followersThreshold").GetInt32();
+                twitterFollowersThreshold = nitterSettings.Value.GetProperty("twitterFollowersThreshold").GetInt32();
+            }
             var twitterUser = await _twitterUserService.GetUserAsync(username);
             if (user.StatusesCount == -1)
             {
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 1)
+            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > followersThreshold)
             {
                 extractedTweets = await TweetFromNitter(user, fromTweetId, true, false);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
             }
-            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > 50_000)
+            else if (user.StatusesCount != twitterUser.StatusCount && user.Followers > 0 && twitterUser.FollowersCount > twitterFollowersThreshold)
             {
                 extractedTweets = await TweetFromNitter(user, fromTweetId, false, true);
                 await _twitterUserDal.UpdateTwitterStatusesCountAsync(username, twitterUser.StatusCount);
@@ -223,7 +231,7 @@ namespace BirdsiteLive.Twitter
             
             var requester = new DefaultHttpRequester();
             string useragent;
-            if (nitterSettings.Value.TryGetProperty("useragent", out JsonElement useragentElement))
+            if (lowtrust && nitterSettings.Value.TryGetProperty("useragent", out JsonElement useragentElement))
                 useragent = useragentElement.GetString();
             else
                 useragent = Useragent;
